@@ -18,7 +18,6 @@ const contactSchema = new Schema(
       unique: true, // Tekil olması için
       lowercase: true, // Küçük harfe çevirme
       trim: true, // Boşlukları temizleme
-      enum: [null, String],
       match: [
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
         'Lütfen geçerli bir e-posta adresi giriniz',

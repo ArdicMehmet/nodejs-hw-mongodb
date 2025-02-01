@@ -5,13 +5,7 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js",
-    "get-all": "node src/scripts/getAllContacts",
-    "generate": "node src/scripts/generateContacts.js",
-    "add-one": "node src/scripts/addOneContact.js",
-    "count": "node src/scripts/countContacts.js",
-    "remove-last": "node src/scripts/removeLastContact.js",
-    "remove-all": "node src/scripts/removeAllContacts.js"
+    "start": "nodemon src/index.js"
   },
   "keywords": [],
   "author": "Mehmet Ardic",
@@ -27,6 +21,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "http-errors": "^2.0.0",
     "mongoose": "^8.9.5",
     "pino": "^9.6.0",
     "pino-http": "^10.4.0",
