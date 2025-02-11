@@ -8,17 +8,37 @@ import {
 } from '../services/contacts.js';
 import mongoose from 'mongoose';
 
-export const getContactsController = async (req, res, next) => {
-  console.log(req.body);
-
-  const contacts = await getAllContacts();
-  if (contacts.length == 0 || contacts == null) {
-    throw createHttpError(404, 'Contacts not found');
+export const getContactsController = async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const perPage = parseInt(req.query.perPage) || 10;
+  const sortBy = req.query.sortBy || 'name'; // Varsayılan olarak 'name' ile sıralanacak
+  const sortOrder = req.query.sortOrder === 'desc' ? -1 : 1; // 'desc' ise azalan, 'asc' ise artan sıralama
+  const contactType = req.query.type || null; // İletişim türü (null olursa, filtreleme yapılmaz)
+  const isFavourite =
+    req.query.isFavourite !== undefined
+      ? JSON.parse(req.query.isFavourite)
+      : null; // Favori durumu (null olursa, filtreleme yapılmaz)
+  if (page < 1 || perPage < 1) {
+    throw createHttpError(400, 'page and perPage must be 1 or greater.');
   }
+  const contacts = await getAllContacts(
+    page,
+    perPage,
+    sortBy,
+    sortOrder,
+    contactType,
+    isFavourite,
+  );
+
   return res.json({
-    data: contacts,
     status: 200,
-    message: 'Successfully found contacts',
+    message:
+      contacts.data.length > 0
+        ? 'Successfully found contacts!'
+        : 'No contacts found',
+    data: {
+      ...contacts,
+    },
   });
 };
 
