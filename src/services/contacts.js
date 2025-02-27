@@ -7,8 +7,11 @@ export const getAllContacts = async (
   sortOrder = 1,
   contactType = null,
   isFavourite = null,
+  user,
 ) => {
-  let filter = {};
+  let filter = {
+    userId: user._id,
+  };
 
   if (contactType) {
     filter.contactType = contactType;
@@ -36,8 +39,8 @@ export const getAllContacts = async (
   };
 };
 
-export const getContactsById = async (contactId) => {
-  const contact = await ContactsCollection.findById(contactId);
+export const getContactsById = async (contactId, userId) => {
+  const contact = await ContactsCollection.findOne({ _id: contactId, userId });
   return contact;
 };
 
@@ -46,21 +49,27 @@ export const createContact = async (payload) => {
   return contact;
 };
 
-export const deleteContact = async (contactId) => {
+export const deleteContact = async (contactId, userId) => {
   const contact = await ContactsCollection.findOneAndDelete({
     _id: contactId,
+    userId,
   });
 
   return contact;
 };
 
-export const updateContact = async (contactId, payload, options = {}) => {
+export const updateContact = async (
+  contactId,
+  userId,
+  payload,
+  options = {},
+) => {
   const isPatch = options?.upsert === true;
 
   if (!isPatch) {
     // PUT işlemi: Eğer 'upsert' yoksa, 'findOneAndUpdate' kullanılır
     const rawResult = await ContactsCollection.findOneAndUpdate(
-      { _id: contactId },
+      { _id: contactId, userId },
       payload,
       {
         new: true, // Güncellenen değeri döndür
@@ -79,7 +88,7 @@ export const updateContact = async (contactId, payload, options = {}) => {
 
   // PATCH işlemi: Eğer 'upsert' varsa, 'replaceOne' kullanılır
   const result = await ContactsCollection.replaceOne(
-    { _id: contactId },
+    { _id: contactId, userId },
     payload,
     {
       upsert: false, // 'false' çünkü yeni veri eklenmemeli

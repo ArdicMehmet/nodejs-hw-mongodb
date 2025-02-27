@@ -18,6 +18,7 @@ export const getContactsController = async (req, res) => {
     req.query.isFavourite !== undefined
       ? JSON.parse(req.query.isFavourite)
       : null; // Favori durumu (null olursa, filtreleme yapılmaz)
+  const user = req.user;
   if (page < 1 || perPage < 1) {
     throw createHttpError(400, 'page and perPage must be 1 or greater.');
   }
@@ -28,6 +29,7 @@ export const getContactsController = async (req, res) => {
     sortOrder,
     contactType,
     isFavourite,
+    user,
   );
 
   return res.json({
@@ -44,13 +46,16 @@ export const getContactsController = async (req, res) => {
 
 export const getContactsByIdController = async (req, res, next) => {
   const { contactId } = req.params;
+  console.log('USEEEEEEEEERRRRRR DENEME : ', req.user);
+
+  const userId = req.user._id;
   if (!contactId) {
     throw createHttpError(404, 'ContactId not found');
   }
   if (!mongoose.Types.ObjectId.isValid(contactId)) {
     throw createHttpError(500, 'Invalid id format');
   }
-  const contact = await getContactsById(contactId);
+  const contact = await getContactsById(contactId, userId);
 
   if (!contact) {
     throw createHttpError(404, 'Contact not found');
@@ -64,11 +69,11 @@ export const getContactsByIdController = async (req, res, next) => {
 
 export const createContactController = async (req, res) => {
   const data = req.body;
-  console.log(data);
   if (!data) {
     throw createHttpError(400, 'Invalid input data');
   }
-  const contact = await createContact(data);
+
+  const contact = await createContact({ ...data, userId: req.user._id });
   if (!contact) {
     throw createHttpError(500, 'Database error');
   }
@@ -81,13 +86,14 @@ export const createContactController = async (req, res) => {
 
 export const deleteContactController = async (req, res) => {
   const { contactId } = req.params;
+  const userId = req.user._id;
   if (!contactId) {
     throw createHttpError(404, 'ContactId not found');
   }
   if (!mongoose.Types.ObjectId.isValid(contactId)) {
     throw createHttpError(500, 'Invalid id format');
   }
-  const contact = await deleteContact(contactId);
+  const contact = await deleteContact(contactId, userId);
   if (!contact) {
     throw createHttpError(404, 'Contact not found');
   }
@@ -96,6 +102,7 @@ export const deleteContactController = async (req, res) => {
 
 export const upsertContactController = async (req, res) => {
   const { contactId } = req.params;
+  const userId = req.user._id;
   if (!contactId) {
     throw createHttpError(404, 'ContactId not found');
   }
@@ -103,7 +110,7 @@ export const upsertContactController = async (req, res) => {
     throw createHttpError(500, 'Invalid id format');
   }
 
-  const contact = await updateContact(contactId, req.body, {
+  const contact = await updateContact(contactId, userId, req.body, {
     upsert: true,
   });
 
@@ -120,6 +127,7 @@ export const upsertContactController = async (req, res) => {
 };
 export const patchContactController = async (req, res) => {
   const { contactId } = req.params;
+  const userId = req.user._id;
   if (!contactId) {
     throw createHttpError(404, 'ContactId not found');
   }
@@ -127,7 +135,7 @@ export const patchContactController = async (req, res) => {
     throw createHttpError(500, 'Invalid id format');
   }
 
-  const contact = await updateContact(contactId, req.body);
+  const contact = await updateContact(contactId, userId, req.body);
 
   if (!contact) {
     throw createHttpError(404, 'Contact not found');

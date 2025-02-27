@@ -1,12 +1,9 @@
 import { model, Schema } from 'mongoose';
+// import { ROLES } from '../../constants/index.js';
 
-const contactSchema = new Schema(
+const usersSchema = new Schema(
   {
     name: {
-      type: String,
-      required: true,
-    },
-    phoneNumber: {
       type: String,
       required: true,
     },
@@ -21,18 +18,15 @@ const contactSchema = new Schema(
         'Lütfen geçerli bir e-posta adresi giriniz',
       ],
     },
-    isFavourite: {
-      type: Boolean,
-      required: false,
-      default: false,
-    },
-    contactType: {
+    password: {
       type: String,
-      required: false,
-      enum: ['work', 'home', 'personal'],
-      default: 'personal',
+      required: true,
     },
-    userId: { type: Schema.Types.ObjectId, ref: 'users' },
+    // role: {
+    //   type: String,
+    //   enum: [ROLES.TEACHER, ROLES.PARENT],
+    //   default: ROLES.PARENT,
+    // },
   },
   {
     timestamps: true,
@@ -40,4 +34,10 @@ const contactSchema = new Schema(
   },
 );
 
-export const ContactsCollection = model('contacts', contactSchema);
+usersSchema.methods.toJSON = function () {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
+
+export const UsersCollection = model('users', usersSchema);
