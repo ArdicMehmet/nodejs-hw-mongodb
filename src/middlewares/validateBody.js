@@ -2,7 +2,7 @@ export const validateBody = (schema) => {
   return (req, res, next) => {
     const { error } = schema.validate(req.body, { abortEarly: false });
     if (error) {
-      console.log('ValidateBody hatası !');
+      console.log('ValidateBody failed !');
 
       return res
         .status(400)

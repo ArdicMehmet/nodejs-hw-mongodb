@@ -7,6 +7,10 @@ import {
   updateContact,
 } from '../services/contacts.js';
 import mongoose from 'mongoose';
+import { saveFileToUploadDir } from '../utils/saveFileToUploadDir.js';
+import dotenv from 'dotenv';
+import { saveFileToCloudinary } from '../utils/saveFileToCloudinary.js';
+dotenv.config();
 
 export const getContactsController = async (req, res) => {
   const page = parseInt(req.query.page) || 1;
@@ -46,7 +50,6 @@ export const getContactsController = async (req, res) => {
 
 export const getContactsByIdController = async (req, res, next) => {
   const { contactId } = req.params;
-  console.log('USEEEEEEEEERRRRRR DENEME : ', req.user);
 
   const userId = req.user._id;
   if (!contactId) {
@@ -69,11 +72,27 @@ export const getContactsByIdController = async (req, res, next) => {
 
 export const createContactController = async (req, res) => {
   const data = req.body;
+  const photo = req.file;
+  let photoUrl;
+
+  if (photo) {
+    if (process.env['ENABLE_CLOUDINARY'] === 'true') {
+      console.log('Photo içinde if e girdi');
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
   if (!data) {
     throw createHttpError(400, 'Invalid input data');
   }
 
-  const contact = await createContact({ ...data, userId: req.user._id });
+  const contact = await createContact({
+    ...data,
+    userId: req.user._id,
+    photo: photoUrl,
+  });
   if (!contact) {
     throw createHttpError(500, 'Database error');
   }

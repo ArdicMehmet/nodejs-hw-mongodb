@@ -1,4 +1,5 @@
 // src/server.js
+import { UPLOAD_DIR } from './constants/index.js';
 
 import express from 'express';
 import pino from 'pino-http';
@@ -28,7 +29,7 @@ export const startServer = () => {
       },
     }),
   );
-
+  app.use('/uploads', express.static(UPLOAD_DIR));
   app.use(indexRouter);
   app.use('*', notFoundHandler);
 
