@@ -146,7 +146,10 @@ export const upsertContactController = async (req, res) => {
 };
 export const patchContactController = async (req, res) => {
   const { contactId } = req.params;
+  let patchedContact = { ...req.body };
   const userId = req.user._id;
+  const photo = req.file;
+
   if (!contactId) {
     throw createHttpError(404, 'ContactId not found');
   }
@@ -154,7 +157,20 @@ export const patchContactController = async (req, res) => {
     throw createHttpError(500, 'Invalid id format');
   }
 
-  const contact = await updateContact(contactId, userId, req.body);
+  let photoUrl;
+
+  if (photo) {
+    if (process.env['ENABLE_CLOUDINARY'] === 'true') {
+      photoUrl = await saveFileToCloudinary(photo);
+    } else {
+      photoUrl = await saveFileToUploadDir(photo);
+    }
+  }
+
+  photoUrl ? (patchedContact = { ...patchedContact, photo: photoUrl }) : '';
+  console.log('patched CONTACT : ', patchedContact);
+
+  const contact = await updateContact(contactId, userId, patchedContact);
 
   if (!contact) {
     throw createHttpError(404, 'Contact not found');
